@@ -1,18 +1,18 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const backupDirectory = '<path_to_backup_directory>'; // Specify the path to the directory containing the backup files
 const restoreDirectory = '<path_to_restore_directory>'; // Specify the path to the directory where you want to restore the files
 
 // Function to create a directory if it doesn't exist
-const createDirectoryIfNotExists = (directoryPath) => {
+const createDirectoryIfNotExists = (directoryPath: string) => {
     if (!fs.existsSync(directoryPath)) {
         fs.mkdirSync(directoryPath);
     }
 };
 
 // Function to move a file from the source path to the destination path
-const moveFile = (sourcePath, destinationPath) => {
+const moveFile = (sourcePath: string, destinationPath: string) => {
     fs.renameSync(sourcePath, destinationPath);
 };
 
@@ -31,12 +31,12 @@ const restoreBackup = () => {
     createDirectoryIfNotExists(restoreDirectory);
 
     // Process albums
-    albums.forEach((album) => {
+    albums.forEach((album: any) => {
         const albumDirectory = path.join(restoreDirectory, album.title);
         createDirectoryIfNotExists(albumDirectory);
 
         // Process photos in the album
-        album.photos.forEach((photo) => {
+        album.photos.forEach((photo: any) => {
             const photoPath = path.join(backupDirectory, `photo_${photo.id}.json`);
             const photoData = fs.readFileSync(photoPath, 'utf-8');
             const photoInfo = JSON.parse(photoData);
