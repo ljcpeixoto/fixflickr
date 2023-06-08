@@ -1,0 +1,19 @@
+{
+  "name": "fix-flickr-backup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/index.ts",
+  "bin": {
+    "welc": "bin/index.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.1.4",
+    "typescript": "^5.0.4"
+  }
+}
