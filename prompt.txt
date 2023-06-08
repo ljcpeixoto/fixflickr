@@ -1,7 +1,6 @@
 User
-Please make it possible to pass path_to_backup_directory and path_to_restore_directory as parameters to the script.
+Please consider that the actual jpg file of the photo is not inside the backupDirectory, but in one of several directories that are inside the directory that contains backupDirectory, and those directories are name data-download-1, data-download-2, data-download-3, etc. Each photo can be in any of those directories (data-download-xxx) - you must search for each photo before moving it to its final destinationPath.
 
 Response
-Certainly! I've modified the code to accept the backup and restore directories as command-line arguments. Here's the updated code:
-<script>
-Now you can pass the backup directory
+Understood. In that case, we'll need to modify the code to search for the photo files in the subdirectories of the directory containing the backupDirectory. Here's the updated code:
+!!!Error in message stream!!!
