@@ -59,7 +59,8 @@ const restoreBackup = (backupDirectory: string, restoreDirectory: string) => {
     const readAlbums = () => {
         const albumsPath = path.join(backupDirectory, 'albums.json');
         const albumsData = fs.readFileSync(albumsPath, 'utf-8');
-        return JSON.parse(albumsData) as Album[];
+        const { albums } = JSON.parse(albumsData) as { albums: Album[] };
+        return albums;
     };
 
     const albums = readAlbums();
