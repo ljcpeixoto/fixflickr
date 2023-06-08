@@ -14,6 +14,34 @@ interface Album {
     photos: string[];
 }
 
+interface PhotoInfo {
+    id: string;
+    name: string;
+    description: string;
+    count_views: string;
+    count_faves: string;
+    count_comments: string;
+    date_taken: string;
+    count_tags: string;
+    count_notes: string;
+    rotation: number;
+    date_imported: string;
+    photopage: string;
+    original: string;
+    license: string;
+    geo: any[];
+    groups: any[];
+    albums: any[];
+    tags: any[];
+    people: any[];
+    notes: any[];
+    privacy: string;
+    comment_permissions: string;
+    tagging_permissions: string;
+    safety: string;
+    comments: any[];
+}
+
 const backupDirectory = '<path_to_backup_directory>'; // Specify the path to the directory containing the backup files
 const restoreDirectory = '<path_to_restore_directory>'; // Specify the path to the directory where you want to restore the files
 
@@ -52,16 +80,16 @@ const restoreBackup = () => {
         album.photos.forEach((photoId) => {
             const photoPath = path.join(backupDirectory, `photo_${photoId}.json`);
             const photoData = fs.readFileSync(photoPath, 'utf-8');
-            const photoInfo = JSON.parse(photoData);
+            const photoInfo = JSON.parse(photoData) as PhotoInfo;
 
-            const year = new Date(photoInfo.dateTaken).getFullYear();
-            const month = new Date(photoInfo.dateTaken).toLocaleString('default', { month: '2-digit' });
+            const year = new Date(photoInfo.date_taken).getFullYear();
+            const month = new Date(photoInfo.date_taken).toLocaleString('default', { month: '2-digit' });
             const monthDirectory = path.join(albumDirectory, `${year}-${month}`);
             createDirectoryIfNotExists(monthDirectory);
 
             // Move the photo file to the appropriate directory
-            const sourcePath = path.join(backupDirectory, `${photoId}.jpg`);
-            const destinationPath = path.join(monthDirectory, `${photoInfo.title}.jpg`);
+            const sourcePath = path.join(backupDirectory, `${photoInfo.id}.jpg`);
+            const destinationPath = path.join(monthDirectory, `${photoInfo.name}.jpg`);
             moveFile(sourcePath, destinationPath);
         });
     });
