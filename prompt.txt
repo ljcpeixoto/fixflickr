@@ -1,9 +1,28 @@
 User
-Very good, but I need some corrections. First, rewrite the code in typescript.
+Good. Now, please incorporate in this code the Album interface, which I will give you next.
 
 Response
-Certainly! Here's the TypeScript version of the code:
-<script>
-In this version, I added TypeScript type annotations to the variables and function parameters to provide better static type checking and improve code readability. Remember to replace <path_to_backup_directory> and <path_to_restore_directory> with the actual paths to the directories you're using.
+Certainly! Please provide me with the Album interface, and I'll incorporate it into the code for you.
 
-You can compile and run this TypeScript script using the TypeScript compiler (tsc) and then run the generated JavaScript file using Node.js (node script.js). Let me know if you have any further questions or if you need additional improvements.
+User
+export interface Album {
+    photo_count:  string;
+    id:           string;
+    url:          string;
+    title:        string;
+    description:  string;
+    view_count:   string;
+    created:      string;
+    last_updated: string;
+    cover_photo:  string;
+    photos:       string[];
+}
+
+Response
+Thank you for providing the Album interface. Here's the updated code with the Album interface incorporated:
+<script>
+Please make sure to replace <path_to_backup_directory> and <path_to_restore_directory> with the actual paths to the directories you're using.
+
+Now the code uses the Album interface to provide type information for the albums array. This will improve type checking and code readability.
+
+Let me know if you need further assistance or have any other questions!
