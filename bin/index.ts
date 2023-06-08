@@ -56,4 +56,57 @@ const restoreBackup = (backupDirectory: string, restoreDirectory: string) => {
     };
 
     // Read albums.json file
-    const readAlbums = ()
+    const readAlbums = () => {
+        const albumsPath = path.join(backupDirectory, 'albums.json');
+        const albumsData = fs.readFileSync(albumsPath, 'utf-8');
+        return JSON.parse(albumsData) as Album[];
+    };
+
+    const albums = readAlbums();
+
+    // Create restore directory if it doesn't exist
+    createDirectoryIfNotExists(restoreDirectory);
+
+    // Process albums
+    albums.forEach((album) => {
+        const albumDirectory = path.join(restoreDirectory, album.title);
+        createDirectoryIfNotExists(albumDirectory);
+
+        // Process photos in the album
+        album.photos.forEach((photoId) => {
+            const photoPath = path.join(backupDirectory, `photo_${photoId}.json`);
+            const photoData = fs.readFileSync(photoPath, 'utf-8');
+            const photoInfo = JSON.parse(photoData) as PhotoInfo;
+
+            const year = new Date(photoInfo.date_taken).getFullYear();
+            const month = new Date(photoInfo.date_taken).toLocaleString('default', { month: '2-digit' });
+            const monthDirectory = path.join(albumDirectory, `${year}-${month}`);
+            createDirectoryIfNotExists(monthDirectory);
+
+            // Search for the photo file in data-download-xxx directories
+            const parentDirectory = path.dirname(backupDirectory);
+            const photoFile = fs.readdirSync(parentDirectory, { withFileTypes: true })
+                .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith('data-download-'))
+                .map((dirent) => path.join(parentDirectory, dirent.name, `${photoInfo.id}.jpg`))
+                .find((filePath) => fs.existsSync(filePath));
+
+            if (photoFile) {
+                // Move the photo file to the appropriate directory
+                const destinationPath = path.join(monthDirectory, `${photoInfo.name}.jpg`);
+                moveFile(photoFile, destinationPath);
+            } else {
+                console.log(`Photo file not found for ID: ${photoInfo.id}`);
+            }
+        });
+    });
+
+    console.log('Restoration completed successfully!');
+};
+
+// Parse command-line arguments
+const args = process.argv.slice(2);
+const backupDirectory = args[0] || '<default_backup_directory>'; // Specify the default backup directory if not provided as argument
+const restoreDirectory = args[1] || '<default_restore_directory>'; // Specify the default restore directory if not provided as argument
+
+// Start the restoration process
+restoreBackup(backupDirectory, restoreDirectory);
