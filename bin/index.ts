@@ -93,7 +93,7 @@ const restoreBackup = (backupDirectory: string, restoreDirectory: string) => {
 
             let photoFile: string | undefined;
             directories.some((directory) => {
-                const photoFilePath = path.join(parentDirectory, directory, `photo_${photoId}.json`);
+                const photoFilePath = path.join(parentDirectory, directory, `${photoId}.jpg`);
                 if (fs.existsSync(photoFilePath)) {
                     photoFile = photoFilePath;
                     return true;
