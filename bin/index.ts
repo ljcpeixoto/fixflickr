@@ -42,30 +42,26 @@ interface PhotoInfo {
     comments: any[];
 }
 
-const backupDirectory = '<path_to_backup_directory>'; // Specify the path to the directory containing the backup files
-const restoreDirectory = '<path_to_restore_directory>'; // Specify the path to the directory where you want to restore the files
+const restoreBackup = (backupDirectory: string, restoreDirectory: string) => {
+    // Function to create a directory if it doesn't exist
+    const createDirectoryIfNotExists = (directoryPath: string) => {
+        if (!fs.existsSync(directoryPath)) {
+            fs.mkdirSync(directoryPath);
+        }
+    };
 
-// Function to create a directory if it doesn't exist
-const createDirectoryIfNotExists = (directoryPath: string) => {
-    if (!fs.existsSync(directoryPath)) {
-        fs.mkdirSync(directoryPath);
-    }
-};
+    // Function to move a file from the source path to the destination path
+    const moveFile = (sourcePath: string, destinationPath: string) => {
+        fs.renameSync(sourcePath, destinationPath);
+    };
 
-// Function to move a file from the source path to the destination path
-const moveFile = (sourcePath: string, destinationPath: string) => {
-    fs.renameSync(sourcePath, destinationPath);
-};
+    // Read albums.json file
+    const readAlbums = () => {
+        const albumsPath = path.join(backupDirectory, 'albums.json');
+        const albumsData = fs.readFileSync(albumsPath, 'utf-8');
+        return JSON.parse(albumsData) as Album[];
+    };
 
-// Read albums.json file
-const readAlbums = () => {
-    const albumsPath = path.join(backupDirectory, 'albums.json');
-    const albumsData = fs.readFileSync(albumsPath, 'utf-8');
-    return JSON.parse(albumsData) as Album[];
-};
-
-// Restore backup files
-const restoreBackup = () => {
     const albums = readAlbums();
 
     // Create restore directory if it doesn't exist
@@ -97,5 +93,10 @@ const restoreBackup = () => {
     console.log('Restoration completed successfully!');
 };
 
+// Parse command-line arguments
+const args = process.argv.slice(2);
+const backupDirectory = args[0] || '<default_backup_directory>'; // Specify the default backup directory if not provided as argument
+const restoreDirectory = args[1] || '<default_restore_directory>'; // Specify the default restore directory if not provided as argument
+
 // Start the restoration process
-restoreBackup();
+restoreBackup(backupDirectory, restoreDirectory);
