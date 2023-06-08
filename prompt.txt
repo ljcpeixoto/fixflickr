@@ -1,7 +1,30 @@
 User
-Please consider that the albums.json file actually contains one field name "albums", and that this field is an array of objects with the Album interface.
+Please consider that the "photo_DDDDDDDDDD.json" file may not be in the default_backup_directory, but in another directory inside the same directory that contains default_backup_directory. All those directories that can contain "photo_DDDDDDDDDD.json" files have the same initial name that default_backup_directory, but with a different number in the end (ex: 72157720897628856_6540fa7d07e6_part1, 72157720897628856_6540fa7d07e6_part2, etc).
 
 Response
-Understood. I've updated the code to reflect the structure of the albums.json file where the albums field contains an array of objects with the Album interface. Here's the modified code:
+Understood. In that case, we need to modify the code to search for the photo_DDDDDDDDDD.json files in multiple directories within the parent directory of default_backup_directory. Here's the updated code:
 <script>
 Please replace <default_backup_directory> and <default_restore_directory> with the default directories you want to use if the arguments are not provided.
+
+Error executing code:
+PS D:\Fotos\Flickr\Teste> node D:\Projetos\fixflickr\bin\index.js .\72157720897628856_6540fa7d07e6_part1\ restauradas
+node:internal/fs/utils:344
+    throw err;
+    ^
+
+Error: ENOENT: no such file or directory, open '72157720897628856_6540fa7d07e6_part1\photo_36925663650.json'
+    at Object.openSync (node:fs:585:3)
+    at Object.readFileSync (node:fs:453:35)
+    at D:\Projetos\fixflickr\bin\index.js:33:32
+    at Array.forEach (<anonymous>)
+    at D:\Projetos\fixflickr\bin\index.js:31:22
+    at Array.forEach (<anonymous>)
+    at restoreBackup (D:\Projetos\fixflickr\bin\index.js:27:12)
+    at Object.<anonymous> (D:\Projetos\fixflickr\bin\index.js:70:1)
+    at Module._compile (node:internal/modules/cjs/loader:1101:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1153:10) {
+  errno: -4058,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '72157720897628856_6540fa7d07e6_part1\\photo_36925663650.json'
+}

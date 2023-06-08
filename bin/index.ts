@@ -84,12 +84,21 @@ const restoreBackup = (backupDirectory: string, restoreDirectory: string) => {
             const monthDirectory = path.join(albumDirectory, `${year}-${month}`);
             createDirectoryIfNotExists(monthDirectory);
 
-            // Search for the photo file in data-download-xxx directories
+            // Search for the photo file in directories with matching names
             const parentDirectory = path.dirname(backupDirectory);
-            const photoFile = fs.readdirSync(parentDirectory, { withFileTypes: true })
-                .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith('data-download-'))
-                .map((dirent) => path.join(parentDirectory, dirent.name, `${photoInfo.id}.jpg`))
-                .find((filePath) => fs.existsSync(filePath));
+            const backupDirectoryName = path.basename(backupDirectory);
+            const directories = fs.readdirSync(parentDirectory, { withFileTypes: true })
+                .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith(backupDirectoryName))
+                .map((dirent) => dirent.name);
+
+            let photoFile: string | undefined;
+            directories.some((directory) => {
+                const photoFilePath = path.join(parentDirectory, directory, `photo_${photoId}.json`);
+                if (fs.existsSync(photoFilePath)) {
+                    photoFile = photoFilePath;
+                    return true;
+                }
+            });
 
             if (photoFile) {
                 // Move the photo file to the appropriate directory
