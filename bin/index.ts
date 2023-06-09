@@ -55,13 +55,42 @@ const restoreBackup = (backupDirectory: string, restoreDirectory: string) => {
         fs.renameSync(sourcePath, destinationPath);
     };
 
+    const copyFile = (sourcePath: string, destinationPath: string) => {
+        fs.copyFileSync(sourcePath, destinationPath);
+    };
+
     // Read albums.json file
     const readAlbums = () => {
         const albumsPath = path.join(backupDirectory, 'albums.json');
         const albumsData = fs.readFileSync(albumsPath, 'utf-8');
-        const { albums } = JSON.parse(albumsData) as { albums: Album[] };
+        const {albums} = JSON.parse(albumsData) as { albums: Album[] };
         return albums;
     };
+
+    const searchInfoFile = (photoId: string): PhotoInfo => {
+        // Search for the Info file in directories with name in the same patter of backupDirectoryName (prefix-partDDD)
+        const parentDirectory = path.dirname(backupDirectory);
+        const backupDirectoryName = path.basename(backupDirectory);
+        // Extract prefix from backupDirectoryName
+        const prefix = backupDirectoryName.match(/^(.*?)_part\d+$/)?.[1];
+        const directories = fs.readdirSync(parentDirectory, {withFileTypes: true})
+            .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith(prefix))
+            .map((dirent) => dirent.name);
+
+        let infoFilePath: string | undefined;
+        directories.some((directory) => {
+            const filePath = path.join(parentDirectory, directory, `photo_${photoId}.json`);
+            if (fs.existsSync(filePath)) {
+                infoFilePath = filePath;
+                return true;
+            }
+        });
+        if (!infoFilePath) {
+            throw new Error(`Photo Info file not found: photo_${photoId}.json`);
+        }
+        const photoData = fs.readFileSync(infoFilePath, 'utf-8');
+        return JSON.parse(photoData) as PhotoInfo;
+    }
 
     const albums = readAlbums();
 
@@ -70,44 +99,38 @@ const restoreBackup = (backupDirectory: string, restoreDirectory: string) => {
 
     // Process albums
     albums.forEach((album) => {
-        const albumDirectory = path.join(restoreDirectory, album.title);
-        createDirectoryIfNotExists(albumDirectory);
-
         // Process photos in the album
-        album.photos.forEach((photoId) => {
-            const photoPath = path.join(backupDirectory, `photo_${photoId}.json`);
-            const photoData = fs.readFileSync(photoPath, 'utf-8');
-            const photoInfo = JSON.parse(photoData) as PhotoInfo;
+        album.photos
+            .filter(photoId => photoId != "0")
+            .forEach((photoId) => {
+                const photoInfo = searchInfoFile(photoId);
 
-            const year = new Date(photoInfo.date_taken).getFullYear();
-            const month = new Date(photoInfo.date_taken).toLocaleString('default', { month: '2-digit' });
-            const monthDirectory = path.join(albumDirectory, `${year}-${month}`);
-            createDirectoryIfNotExists(monthDirectory);
+                const year = new Date(photoInfo.date_taken).getFullYear();
+                const month = new Date(photoInfo.date_taken).toLocaleString('default', {month: '2-digit'});
+                const monthDirectory = path.join(restoreDirectory, `${year}-${month}`);
+                createDirectoryIfNotExists(monthDirectory);
 
-            // Search for the photo file in directories with matching names
-            const parentDirectory = path.dirname(backupDirectory);
-            const backupDirectoryName = path.basename(backupDirectory);
-            const directories = fs.readdirSync(parentDirectory, { withFileTypes: true })
-                .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith(backupDirectoryName))
-                .map((dirent) => dirent.name);
+                // Search for the photo file in data-download-xxx directories
+                const parentDirectory = path.dirname(backupDirectory);
+                const dataDirectories = fs.readdirSync(parentDirectory, {withFileTypes: true})
+                    .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith('data-download-'));
+                let photoFile = dataDirectories
+                    .map((dirent) => path.join(parentDirectory, dirent.name, `${photoInfo.name}_${photoInfo.id}_o.jpg`))
+                    .find((filePath) => fs.existsSync(filePath));
+                if (!photoFile) {
+                    photoFile = dataDirectories
+                        .map((dirent) => path.join(parentDirectory, dirent.name, `${photoInfo.name}_${photoInfo.id}.mp4`))
+                        .find((filePath) => fs.existsSync(filePath));
+                }
 
-            let photoFile: string | undefined;
-            directories.some((directory) => {
-                const photoFilePath = path.join(parentDirectory, directory, `${photoId}.jpg`);
-                if (fs.existsSync(photoFilePath)) {
-                    photoFile = photoFilePath;
-                    return true;
+                if (photoFile) {
+                    // Move the photo file to the appropriate directory
+                    const destinationPath = path.join(monthDirectory, `${photoInfo.name}.jpg`);
+                    copyFile(photoFile, destinationPath);
+                } else {
+                    console.log(`Photo file not found for ID: ${photoInfo.id}`);
                 }
             });
-
-            if (photoFile) {
-                // Move the photo file to the appropriate directory
-                const destinationPath = path.join(monthDirectory, `${photoInfo.name}.jpg`);
-                moveFile(photoFile, destinationPath);
-            } else {
-                console.log(`Photo file not found for ID: ${photoInfo.id}`);
-            }
-        });
     });
 
     console.log('Restoration completed successfully!');
